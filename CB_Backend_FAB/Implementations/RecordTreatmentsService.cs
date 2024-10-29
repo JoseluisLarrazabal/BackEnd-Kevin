@@ -1,6 +1,8 @@
 using CB_Backend_FAB.Models;
 using CB_Backend_FAB.Services;
 using MySql.Data.MySqlClient;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CB_Backend_FAB.Implementations
 {
@@ -55,8 +57,12 @@ namespace CB_Backend_FAB.Implementations
             {
                 await connection.OpenAsync();
 
-                string query = @"SELECT recordTreatmentsID, attentionDate, diagnosis, treatment, personID, status, registerDate, lastUpdate, userID
-                                 FROM recordtreatments";
+                // Consulta SQL modificada para incluir tanto el nombre como el apellido del paciente
+                string query = @"SELECT rt.recordTreatmentsID, rt.attentionDate, rt.diagnosis, rt.treatment, 
+                                rt.personID, p.name AS personName, p.lastName AS personLastName, 
+                                rt.status, rt.registerDate, rt.lastUpdate, rt.userID
+                         FROM recordtreatments rt
+                         LEFT JOIN person p ON rt.personID = p.personID"; // Unión con la tabla 'person'
 
                 using (var command = new MySqlCommand(query, connection))
                 {
@@ -73,11 +79,13 @@ namespace CB_Backend_FAB.Implementations
                                 Person = new Person
                                 {
                                     PersonID = reader.GetInt32(4),
+                                    Name = reader.GetString(5),
+                                    Lastname = reader.GetString(6) // Obtiene el apellido del paciente
                                 },
-                                Status = reader.GetByte(5),
-                                RegisterDate = reader.GetDateTime(6),
-                                LastUpdate = reader.GetDateTime(7),
-                                UserID = reader.GetInt16(8)
+                                Status = reader.GetByte(7),
+                                RegisterDate = reader.GetDateTime(8),
+                                LastUpdate = reader.GetDateTime(9),
+                                UserID = reader.GetInt16(10)
                             });
                         }
                     }
@@ -85,6 +93,7 @@ namespace CB_Backend_FAB.Implementations
             }
             return recordTreatmentsList;
         }
+
 
         public async Task<RecordTreatments> GetByIdAsync(int id)
         {

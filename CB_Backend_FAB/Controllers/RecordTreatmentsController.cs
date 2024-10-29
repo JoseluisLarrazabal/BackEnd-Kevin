@@ -33,17 +33,19 @@ namespace CB_Backend_FAB.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> Post([FromBody] RecordTreatments recordTreatments)
+        public async Task<ActionResult> Post([FromBody] RecordTreatments recordTreatments)
         {
             try
             {
                 await _recordTreatmentsService.CreateAsync(recordTreatments);
-                return Ok("OK");
+                return Ok(new { message = "OK" }); // Devuelve un objeto JSON en lugar de texto plano
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error : {ex.Message}");
+                return StatusCode(500, new { error = ex.Message });
             }
         }
+
+
     }
 }
